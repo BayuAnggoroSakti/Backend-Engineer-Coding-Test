@@ -1,5 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-    const Todo_items = sequelize.define("todo_items", {
+    const Todo_items = sequelize.define("todos", {
         id: {
             allowNull: false,
             autoIncrement: true,
@@ -20,11 +20,10 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.STRING
           },
           is_active: {
-            type: Sequelize.INTEGER,
-            defaultValue: 1,
+            type: Sequelize.BOOLEAN,
+            defaultValue: true,
             allowNull: false
           },
-         
     });
   
     return Todo_items;

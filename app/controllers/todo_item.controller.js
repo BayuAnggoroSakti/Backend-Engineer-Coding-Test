@@ -8,26 +8,36 @@ exports.create = (req, res) => {
     let priority = "";
   // Validate request
   if (!req.body.title) {
+    // res.status(400).send({
+    //     name: "BadRequest",
+    //     message: "notNull Violation: todo_items.title cannot be null",
+    //     code: 400,
+    //     className: "bad-request",
+    //     data:{},
+    //     errors: {}
+    // });
     res.status(400).send({
-        name: "BadRequest",
-        message: "notNull Violation: todo_items.title cannot be null",
-        code: 400,
-        className: "bad-request",
-        data:{},
-        errors: {}
-    });
+      status: "Bad Request",
+      message: "title cannot be null",
+      data:{}
+  });
     return;
   }
 
   if (!req.body.activity_group_id) {
+    // res.status(400).send({
+    //     name: "BadRequest",
+    //     message: "notNull Violation: todo_items.activity_group_id cannot be null",
+    //     code: 400,
+    //     className: "bad-request",
+    //     data:{},
+    //     errors: {}
+    // });
     res.status(400).send({
-        name: "BadRequest",
-        message: "notNull Violation: todo_items.activity_group_id cannot be null",
-        code: 400,
-        className: "bad-request",
-        data:{},
-        errors: {}
-    });
+      status: "Bad Request",
+      message: "activity_group_id cannot be null",
+      data:{}
+  });
     return;
   }
 
@@ -55,7 +65,11 @@ exports.create = (req, res) => {
 
   Todo_item.create(todo_item)
     .then(data => {
-      res.status(201).send(data);
+      res.status(201).send({
+        status: "Success",
+        message: "Success",
+        data: data
+      });
     })
     .catch(err => {
       res.status(500).send({
@@ -76,6 +90,8 @@ exports.findAll = (req, res) => {
         limit:1000,
         skip:0,
         total: data.length,
+        status: "Success",
+        message: "Success",
         data: data
       });
     })
@@ -93,11 +109,16 @@ exports.findOne = (req, res)  => {
   Todo_item.findByPk(id)
     .then(data => {
       if (data) {
-       res.send(data);
+        res.send({
+          status: "Success",
+          message: "Success",
+          data: data
+        })
       }else{
       res.status(404).send({
         name: "NotFound",
-        message: "No record found for id "+ id,
+        status: "Not Found",
+        message: `Todo with ID ${id} Not Found`,
         code: 404,
         className: "not-found",
         errors: {}
@@ -138,21 +159,31 @@ exports.update = (req, res) => {
       if (num == 1) {
         Todo_item.findByPk(id)
           .then(data => {
-            res.send(data);
+            res.send({
+              status: "Success",
+              message: "Success",
+              data: data
+             });
           })
           .catch(err => {
-            res.status(404).send({
+            res.status(500).send({
               message: "Error retrieving Todo Item with id=" + id
             });
           });
       } else {
         res.status(404).send({
-          name: "NotFound",
-          message: "No record found for id "+id,
-          code: 404,
-          className: "not-found",
-          errors: {}
+          status:"Not Found",
+          message: `Todo with ID ${id} Not Found`,
+          data:{}
         });
+        // res.status(404).send({
+        //   name: "NotFound",
+        //   status:"Not Found",
+        //   message: `Todo with ID ${id} Not Found`,
+        //   code: 404,
+        //   className: "not-found",
+        //   errors: {}
+        // });
       }
     })
     .catch(err => {
@@ -165,19 +196,25 @@ exports.update = (req, res) => {
 exports.delete = (req, res) => {
   const id_query = req.query.id;
   const id = id_query ? id_query : req.params.id;
-  //const condition = id_query ? { id: [id_query] }  : { id:  req.params.id};
-  const condition = id_query ? `(${id_query})`  : `(${req.params.id})`;
+  //const condition = id_query ? `(${id_query})`  : `(${req.params.id})`;
+  const condition = id_query ? { id: [id_query] }  : { id:  req.params.id};
   Todo_item.destroy({ where:  condition })
     //sequelize.query(`DELETE FROM todo_items where id IN ${condition} `)
     .then(num => {
       if (num == 1) {
-        res.send([{
-          message: `Todo Items with id IN ${id} was deleted successfully!`
-        }]);
+        res.send({
+          status: "Success",
+          message: `Success`,
+          data: {}
+          //message: `Todo Items with id IN ${id} was deleted successfully!`
+        });
       } else {
-        res.send([{
-          message: `Cannot delete Todo Items with id IN ${id}. Maybe Todo Items was not found!`
-        }]);
+        res.status(404).send({
+          status:"Not Found",
+          message: `Todo with ID ${id} Not Found`,
+          data:{}
+          //message: `Cannot delete Todo Items with id IN ${id}. Maybe Todo Items was not found!`
+      });
       }
     })
     .catch(err => {

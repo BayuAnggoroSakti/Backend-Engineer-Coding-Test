@@ -7,25 +7,37 @@ const sequelize = db.sequelize;
 exports.create = (req, res) => {
   // Validate request
   if (!req.body.title) {
+    // res.status(400).send({
+    //     name: "Bad Request",
+    //     status: "BadRequest",
+    //     message: "notNull Violation: activity_groups.title cannot be null",
+    //     code: 400,
+    //     className: "bad-request",
+    //     data:{},
+    //     errors: {}
+    // });
     res.status(400).send({
-        name: "BadRequest",
-        message: "notNull Violation: activity_groups.title cannot be null",
-        code: 400,
-        className: "bad-request",
-        data:{},
-        errors: {}
-    });
+      status: "Bad Request",
+      message: "title cannot be null",
+      data:{}
+  });
     return;
   }
 
   if (!req.body.email) {
+    // res.status(400).send({
+    //     name: "BadRequest",
+    //     status: "BadRequest",
+    //     message: "notNull Violation: activity_groups.email cannot be null",
+    //     code: 400,
+    //     className: "bad-request",
+    //     data:{},
+    //     errors: {}
+    // });
     res.status(400).send({
-        name: "BadRequest",
-        message: "notNull Violation: activity_groups.email cannot be null",
-        code: 400,
-        className: "bad-request",
-        data:{},
-        errors: {}
+      status: "Bad Request",
+      message: "email cannot be null",
+      data:{}
     });
     return;
   }
@@ -38,7 +50,11 @@ exports.create = (req, res) => {
 
   Activity_group.create(activity_group)
     .then(data => {
-      res.status(201).send(data);
+      res.status(201).send({
+        status: "Success",
+        message: "Success",
+        data:data
+      });
     })
     .catch(err => {
       res.status(500).send({
@@ -49,6 +65,26 @@ exports.create = (req, res) => {
 };
 
 // Retrieve all activity_groups from the database.
+// exports.findAll = (req, res) => {
+//   const email = req.query.email;
+//   const condition_email = email ? { email: { [Op.eq]: `${email}` } } : null;
+
+//   Activity_group.findAll({ where:  condition_email })
+//     .then(data => {
+//       res.send({
+//         limit:1000,
+//         skip:0,
+//         total: data.length,
+//         data: data
+//       });
+//     })
+//     .catch(err => {
+//       res.status(500).send({
+//         message:
+//           err.message || "Some error occurred while retrieving activity_groups."
+//       });
+//     });
+// };
 exports.findAll = (req, res) => {
   const email = req.query.email;
   const condition_email = email ? { email: { [Op.eq]: `${email}` } } : null;
@@ -59,6 +95,8 @@ exports.findAll = (req, res) => {
         limit:1000,
         skip:0,
         total: data.length,
+        status: "Success",
+        message: "Success",
         data: data
       });
     })
@@ -76,20 +114,27 @@ exports.findOne = (req, res)  => {
   Activity_group.findByPk(id, {raw: true})
     .then(data => {
       if (data) {
-        const condition = {activity_group_id: { [Op.eq]: `${id}` }} ;
-        todo_item.findAll({where : condition})
-        .then(data2 => {
-          res.send({
-            id: data["id"],
-            title: data["title"],
-            created_at: data["createdAt"],
-            todo_items: data2
-          })
+        // const condition = {activity_group_id: { [Op.eq]: `${id}` }} ;
+        // todo_item.findAll({where : condition})
+        // .then(data2 => {
+        //   res.send({
+        //     id: data["id"],
+        //     title: data["title"],
+        //     created_at: data["createdAt"],
+        //     todo_items: data2
+        //   })
+        // })
+        res.send({
+          status: "Success",
+          message: "Success",
+          data: data
         })
       }else{
       res.status(404).send({
         name: "NotFound",
-        message: "No record found for id "+ id,
+        status: "Not Found",
+        message: `Activity with ID ${id} Not Found`,
+        data:{},
         code: 404,
         className: "not-found",
         errors: {}
@@ -115,20 +160,32 @@ exports.update = (req, res) => {
       if (num == 1) {
         Activity_group.findByPk(id)
           .then(data => {
-            res.send(data);
+           // res.send(data);
+           res.send({
+            status: "Success",
+            message: "Success",
+            data: data
+           });
           })
           .catch(err => {
             res.status(404).send({
-              message: "Error retrieving Activity Group with id=" + id
+              status:"Error",
+              message: "Error retrieving Activity Group with id=" + id,
+              data:{}
             });
           });
       } else {
+        // res.status(404).send({
+        //   name: "NotFound",
+        //   message: "No record found for id "+id,
+        //   code: 404,
+        //   className: "not-found",
+        //   errors: {}
+        // });
         res.status(404).send({
-          name: "NotFound",
-          message: "No record found for id "+id,
-          code: 404,
-          className: "not-found",
-          errors: {}
+          status:"Not Found",
+          message: `Activity with ID ${id} Not Found`,
+          data:{}
         });
       }
     })
@@ -142,25 +199,34 @@ exports.update = (req, res) => {
 exports.delete = (req, res) => {
   const id_query = req.query.id;
   const id = id_query ? id_query : req.params.id;
-  const condition = id_query ? `(${id_query})`  : `(${req.params.id})`;
-
+  //const condition = id_query ? `(${id_query})`  : `(${req.params.id})`;
+  const condition = id_query ? { id: [id_query] }  : { id:  req.params.id};
   Activity_group.destroy({ where:  condition })
   //sequelize.query(`DELETE FROM activity_groups where id IN ${condition} `)
     .then(num => {
       console.log(num.length);
       if (num == 1) {
-        res.send([{
-          message: `Activity_group with id IN ${id} was deleted successfully!`
-        }]);
+        // res.send([{
+        //   message: `Activity_group with id IN ${id} was deleted successfully!`
+        // }]);
+        res.send({
+          status: "Success",
+          message: `Success`,
+          data: {}
+        });
       } else {
-        res.send([{
-          message: `Cannot delete Activity_group with id IN ${id}. Maybe Activity_group was not found!`
-        }]);
+        res.status(404).send({
+          status:"Not Found",
+          message: `Activity with ID ${id} Not Found`,
+          data:{}
+        });
       }
     })
     .catch(err => {
       res.status(500).send({
-        message: "Could not delete Activity with id=" + err
+        status: "Error",
+        message: "Could not delete Activity with id=" + id,
+        data:{}
       });
     });
 };

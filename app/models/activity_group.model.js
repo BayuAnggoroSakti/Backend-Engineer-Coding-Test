@@ -1,5 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-  const Activity_groups = sequelize.define("activity_groups", {
+  const Activity_groups = sequelize.define("activities", {
     id: {
       allowNull: false,
       autoIncrement: true,
